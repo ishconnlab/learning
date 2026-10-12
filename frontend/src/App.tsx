@@ -7,6 +7,7 @@ import { CoursesPage } from '@/pages/public/CoursesPage';
 import { CourseDetailPage } from '@/pages/public/CourseDetailPage';
 import { VerifyCertificatePage } from '@/pages/public/VerifyCertificatePage';
 import { CmsPageView } from '@/pages/public/CmsPageView';
+import { NotFoundPage } from '@/pages/public/NotFoundPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
@@ -43,6 +44,7 @@ export function App() {
         <Route path="/contact" element={<CmsPageView pageKey="contact" />} />
         <Route path="/privacy" element={<CmsPageView pageKey="privacy" />} />
         <Route path="/terms" element={<CmsPageView pageKey="terms" />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       <Route path="/login" element={<LoginPage />} />
@@ -79,23 +81,12 @@ export function App() {
           <Route element={<ProtectedRoute roles={['platform_admin', 'platform_owner', 'school_admin']} />}>
             <Route path="/app/admin/reports" element={<AdminReportsPage />} />
           </Route>
+
+          <Route path="/app/*" element={<NotFoundPage />} />
         </Route>
       </Route>
 
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
-  );
-}
-
-function NotFound() {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
-      <p className="text-6xl font-bold text-brand-600">404</p>
-      <p className="mt-2 text-lg font-semibold text-slate-800">Page not found</p>
-      <p className="mt-1 text-sm text-slate-500">The page you are looking for does not exist.</p>
-      <a href="/" className="link-brand mt-6 text-sm font-semibold">
-        ← Back to home
-      </a>
-    </div>
   );
 }

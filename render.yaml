@@ -7,7 +7,7 @@ services:
     plan: starter
     region: frankfurt
     branch: main
-    buildCommand: npm ci && npm run build --workspace backend
+    buildCommand: npm ci --include=dev && npm run build --workspace backend
     startCommand: npm run start --workspace backend
     healthCheckPath: /health
     autoDeploy: true
