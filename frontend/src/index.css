@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #695bbe;
+  --accent: #01c82f;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-white text-brand-950 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
+  :focus-visible {
+    outline: 2px solid theme('colors.brand.500');
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: rgba(105, 91, 190, 0.2);
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card-surface {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-soft;
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+
+  .link-brand {
+    @apply text-brand-600 underline-offset-4 hover:text-brand-700 hover:underline;
+  }
+
+  .blob-mask {
+    border-radius: 42% 58% 55% 45% / 45% 42% 58% 55%;
+  }
+
+  .prose-lesson {
+    @apply text-[15px] leading-7 text-slate-700;
+  }
+  .prose-lesson h2 {
+    @apply mt-6 mb-2 text-lg font-semibold text-slate-900;
+  }
+  .prose-lesson h3 {
+    @apply mt-5 mb-2 text-base font-semibold text-slate-900;
+  }
+  .prose-lesson p {
+    @apply mb-4;
+  }
+  .prose-lesson ul {
+    @apply mb-4 list-disc space-y-1 pl-6;
+  }
+  .prose-lesson ol {
+    @apply mb-4 list-decimal space-y-1 pl-6;
+  }
+  .prose-lesson code {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[13px] text-brand-700;
+  }
+  .prose-lesson pre {
+    @apply mb-4 overflow-x-auto rounded-xl bg-slate-900 p-4 text-[13px] leading-relaxed text-slate-100;
+  }
+}

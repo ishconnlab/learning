@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+
+Sitemap: https://ishconnect.example.com/sitemap.xml

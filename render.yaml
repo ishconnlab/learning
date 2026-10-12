@@ -1,0 +1,69 @@
+# Render Blueprint for the IshConnect LMS API.
+# Create the service from this file, then set the `sync: false` secrets in the dashboard.
+services:
+  - type: web
+    name: ishconnect-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    branch: main
+    buildCommand: npm ci && npm run build --workspace backend
+    startCommand: npm run start --workspace backend
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PREFIX
+        value: /api/v1
+      # Public origin of the deployed frontend (set to the Vercel URL).
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: CSRF_ENABLED
+        value: "true"
+
+      # --- Secrets (set in the Render dashboard) ---
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # --- Storage: use durable object storage in production ---
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_FORCE_PATH_STYLE
+        value: "true"
+      - key: S3_PUBLIC_BASE_URL
+        sync: false
+
+      # --- Book processing ---
+      - key: UPLOAD_MAX_MB
+        value: "200"
+      - key: OCR_ENABLED
+        value: "true"
+      - key: OCR_LANGUAGES
+        value: eng
+
+      # --- Certificates ---
+      - key: CERTIFICATE_VERIFY_BASE_URL
+        sync: false
