@@ -28,6 +28,7 @@ export interface School {
 
 export interface Course {
   _id: string;
+  id?: string;
   title: string;
   slug?: string;
   code?: string;

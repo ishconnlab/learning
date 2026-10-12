@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronDown, Clock, GraduationCap, Layers, ListChecks } from 'lucide-react';
+import { Clock, GraduationCap, Layers, ListChecks } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { queryKeys } from '@/lib/query';
 import { useAuth } from '@/store/auth';
@@ -10,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/empty-state';
-import { cn } from '@/lib/utils';
 import type { Course, Module } from '@/types';
 
 interface DetailResponse {
@@ -23,7 +21,6 @@ export function CourseDetailPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [openModule, setOpenModule] = useState<string | null>(null);
 
   const detail = useQuery({
     queryKey: queryKeys.course(idOrSlug),
@@ -70,13 +67,14 @@ export function CourseDetailPage() {
   }
 
   const modules = curriculum.data ?? [];
+  const courseId = course._id || course.id || '';
 
   const handleEnroll = () => {
     if (!user) {
-      navigate(`/login?next=/courses/${course.slug || course._id}`);
+      navigate(`/login?next=/courses/${course.slug || courseId}`);
       return;
     }
-    enroll.mutate(course._id);
+    enroll.mutate(courseId);
   };
 
   return (
@@ -130,48 +128,41 @@ export function CourseDetailPage() {
                 ))}
               </div>
             ) : modules.length ? (
-              <div className="mt-4 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200">
-                {modules.map((mod, idx) => {
-                  const isOpen = openModule === mod._id;
-                  return (
-                    <div key={mod._id} className="bg-white">
-                      <button
-                        type="button"
-                        onClick={() => setOpenModule(isOpen ? null : mod._id)}
-                        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50"
-                      >
-                        <span className="flex min-w-0 items-center gap-3">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
-                            {idx + 1}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate font-medium text-slate-800">{mod.title}</span>
-                            <span className="text-xs text-slate-400">{mod.lessons?.length ?? 0} lessons</span>
-                          </span>
+              <div className="mt-4 space-y-4">
+                {modules.map((mod, idx) => (
+                  <div key={mod._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
+                        {idx + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-slate-800">{mod.title}</span>
+                        <span className="text-xs text-slate-400">
+                          {(mod.lessons?.length ?? 0) + (mod.practicalActivities?.length ?? 0)} items
                         </span>
-                        <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', isOpen && 'rotate-180')} />
-                      </button>
-                      {isOpen && (
-                        <div className="space-y-1 border-t border-slate-100 px-5 py-3">
-                          {(mod.lessons ?? []).map((lesson) => (
-                            <div key={lesson._id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm">
-                              <span className="min-w-0 truncate text-slate-600">{lesson.title}</span>
-                              <Badge variant="outline" className="capitalize">
-                                {lesson.kind.replace(/_/g, ' ')}
-                              </Badge>
-                            </div>
-                          ))}
-                          {(mod.practicalActivities ?? []).map((act) => (
-                            <div key={act._id} className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm">
-                              <span className="min-w-0 truncate text-slate-600">{act.title}</span>
-                              <Badge variant="accent">Practical</Badge>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      </span>
                     </div>
-                  );
-                })}
+                    <ul className="divide-y divide-slate-100 px-5">
+                      {(mod.lessons ?? []).map((lesson) => (
+                        <li key={lesson._id} className="flex items-center justify-between gap-2 py-2.5 text-sm">
+                          <span className="min-w-0 truncate text-slate-600">{lesson.title}</span>
+                          <Badge variant="outline" className="capitalize">
+                            {lesson.kind.replace(/_/g, ' ')}
+                          </Badge>
+                        </li>
+                      ))}
+                      {(mod.practicalActivities ?? []).map((act) => (
+                        <li key={act._id} className="flex items-center justify-between gap-2 py-2.5 text-sm">
+                          <span className="min-w-0 truncate text-slate-600">{act.title}</span>
+                          <Badge variant="accent">Practical</Badge>
+                        </li>
+                      ))}
+                      {!(mod.lessons?.length || mod.practicalActivities?.length) && (
+                        <li className="py-2.5 text-sm text-slate-400">No lessons yet.</li>
+                      )}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="mt-4 text-sm text-slate-500">The curriculum is being prepared.</p>

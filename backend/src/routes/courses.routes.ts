@@ -59,7 +59,7 @@ router.get(
     if (course.status !== 'published' && !staff) throw NotFound('Course not found');
     // Public preview must never leak the source book key.
     const moduleCount = await Module.countDocuments({ course: course._id });
-    return ok(res, { course: course.toJSON(), moduleCount });
+    return ok(res, { course: { ...course.toJSON(), _id: String(course._id) }, moduleCount });
   }),
 );
 
