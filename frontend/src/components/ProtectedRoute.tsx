@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/store/auth';
+import { getToken } from '@/lib/api';
 import { FullPageSpinner } from '@/components/ui/spinner';
 import type { Role } from '@/types';
 
@@ -8,7 +9,7 @@ export function ProtectedRoute({ roles }: { roles?: Role[] }) {
   const location = useLocation();
 
   if (isLoading) return <FullPageSpinner label="Loading your account…" />;
-  if (!user) {
+  if (!user || !getToken()) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
     return <Navigate to={`/login?next=${next}`} replace />;
   }

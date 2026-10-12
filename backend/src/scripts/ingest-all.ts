@@ -15,7 +15,7 @@ import { connectDatabase, disconnectDatabase } from '../db/connect';
 import { env } from '../config/env';
 import { logger } from '../lib/logger';
 import { checksum } from '../lib/ids';
-import { BookProcessingJob, SourceBook, User } from '../models';
+import { BookProcessingJob, Course, CourseVersion, Lesson, Module, PracticalActivity, SourceBook, User } from '../models';
 import { createBookRecord, enqueueBookProcessing } from '../services/books/ingest.service';
 import type { CourseLevel } from '../models/enums';
 
@@ -98,6 +98,7 @@ async function main(): Promise<void> {
   const root = path.resolve(process.cwd(), arg('root') || env.CONTENT_ROOT);
   const levelFilter = arg('level')?.toUpperCase();
   const limit = arg('limit') ? Number(arg('limit')) : Infinity;
+  const publish = process.argv.includes('--publish');
 
   await connectDatabase();
   const uploader = await resolveUploader(arg('user'));
@@ -153,7 +154,42 @@ async function main(): Promise<void> {
     acc[j.status] = (acc[j.status] || 0) + 1;
     return acc;
   }, {});
-  logger.info({ processed, skipped, failed, jobStatus: summary }, 'Ingestion complete — drafts await review');
+  logger.info({ processed, skipped, failed, jobStatus: summary }, 'Book processing finished');
+
+  if (publish) {
+    const drafts = await Course.find({ status: 'draft' }).lean();
+    let published = 0;
+    for (const course of drafts) {
+      const modules = await Module.find({ course: course._id }).sort({ order: 1 }).lean();
+      if (!modules.length) continue;
+      await Module.updateMany({ course: course._id }, { $set: { status: 'published' } });
+      await Lesson.updateMany({ course: course._id }, { $set: { status: 'published' } });
+      await PracticalActivity.updateMany({ course: course._id }, { $set: { status: 'published' } });
+
+      let version = course.activeVersion ? await CourseVersion.findById(course.activeVersion) : null;
+      if (!version) {
+        version = await CourseVersion.create({
+          course: course._id,
+          version: 1,
+          status: 'published',
+          sourceBook: course.sourceBook,
+          modules: modules.map((m) => m._id),
+          createdBy: course.createdBy,
+        });
+      }
+      version.status = 'published';
+      version.publishedAt = new Date();
+      version.modules = modules.map((m) => m._id);
+      await version.save();
+
+      await Course.updateOne(
+        { _id: course._id },
+        { $set: { status: 'published', activeVersion: version._id, publishedAt: new Date() } },
+      );
+      published += 1;
+    }
+    logger.info({ published }, 'Published draft courses');
+  }
   await disconnectDatabase();
 }
 
