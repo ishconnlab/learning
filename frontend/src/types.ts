@@ -46,6 +46,7 @@ export interface Course {
   theoryPercent?: number;
   practicePercent?: number;
   certificateEligible?: boolean;
+  price?: number;
 }
 
 export interface LessonBlock {

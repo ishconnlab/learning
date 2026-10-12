@@ -43,3 +43,8 @@ export function titleCase(value: string): string {
 export function percent(value: number | null | undefined): string {
   return `${Math.round(value ?? 0)}%`;
 }
+
+export function formatMoney(amount: number | null | undefined): string {
+  const value = Math.round(amount ?? 0);
+  return value > 0 ? `${value.toLocaleString('en-US')} RWF` : 'Free';
+}

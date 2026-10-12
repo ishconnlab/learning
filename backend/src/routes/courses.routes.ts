@@ -125,6 +125,12 @@ const courseSchema = z.object({
   language: z.string().optional(),
   code: z.string().optional(),
   featured: z.boolean().optional(),
+  price: z
+    .number()
+    .int()
+    .min(0)
+    .refine((v) => v === 0 || v >= 50000, { message: 'Paid courses must cost at least 50,000 RWF' })
+    .optional(),
   tags: z.array(z.string()).optional(),
   estimatedHours: z.number().optional(),
 });

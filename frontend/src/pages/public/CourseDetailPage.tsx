@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/empty-state';
+import { formatMoney } from '@/lib/utils';
 import type { Course, Module } from '@/types';
 
 interface DetailResponse {
@@ -172,8 +173,8 @@ export function CourseDetailPage() {
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <Card className="p-6">
-            <p className="text-sm text-slate-500">Free enrollment</p>
-            <p className="mt-1 text-3xl font-bold text-slate-900">Free</p>
+            <p className="text-sm text-slate-500">{course.price && course.price > 0 ? 'One-time payment' : 'Free enrollment'}</p>
+            <p className="mt-1 text-3xl font-bold text-slate-900">{formatMoney(course.price)}</p>
             <Button size="lg" className="mt-5 w-full" onClick={handleEnroll} disabled={enroll.isPending}>
               {enroll.isPending ? 'Enrolling…' : user ? 'Enroll now' : 'Sign in to enroll'}
             </Button>

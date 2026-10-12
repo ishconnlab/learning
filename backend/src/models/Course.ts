@@ -24,6 +24,7 @@ export interface ICourse {
   practicePercent: number;
   tags: string[];
   featured: boolean;
+  price: number;
   thumbnailUrl?: string;
   estimatedHours?: number;
   certificateEligible: boolean;
@@ -52,6 +53,7 @@ const courseSchema = new Schema<ICourse>(
     practicePercent: { type: Number, default: 80, min: 0, max: 100 },
     tags: [{ type: String }],
     featured: { type: Boolean, default: false, index: true },
+    price: { type: Number, default: 0, min: 0 },
     thumbnailUrl: { type: String },
     estimatedHours: { type: Number },
     certificateEligible: { type: Boolean, default: true },

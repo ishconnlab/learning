@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton, EmptyState } from '@/components/ui/empty-state';
+import { formatMoney } from '@/lib/utils';
 import type { Course } from '@/types';
 
 const LEVELS = ['L3', 'L4', 'L5', 'General', 'Professional', 'Other'];
@@ -20,7 +21,7 @@ export function AdminCoursesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', level: 'L3', category: 'Software Development', summary: '', description: '' });
+  const [form, setForm] = useState({ title: '', level: 'L3', category: 'Software Development', summary: '', description: '', price: '0' });
 
   const courses = useQuery({
     queryKey: queryKeys.courses({ scope: 'admin' }),
@@ -30,14 +31,23 @@ export function AdminCoursesPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.courses({ scope: 'admin' }) });
 
   const create = useMutation({
-    mutationFn: () => api.post('/courses', form),
+    mutationFn: () => api.post('/courses', { ...form, price: Number(form.price) || 0 }),
     onSuccess: () => {
       toast({ title: 'Course created', variant: 'success' });
-      setForm({ title: '', level: 'L3', category: 'Software Development', summary: '', description: '' });
+      setForm({ title: '', level: 'L3', category: 'Software Development', summary: '', description: '', price: '0' });
       setShowForm(false);
       invalidate();
     },
     onError: (err) => toast({ title: 'Could not create', description: err instanceof ApiError ? err.message : undefined, variant: 'error' }),
+  });
+
+  const setPrice = useMutation({
+    mutationFn: ({ id, price }: { id: string; price: number }) => api.patch(`/courses/${id}`, { price }),
+    onSuccess: () => {
+      toast({ title: 'Price updated', variant: 'success' });
+      invalidate();
+    },
+    onError: (err) => toast({ title: 'Could not update price', description: err instanceof ApiError ? err.message : undefined, variant: 'error' }),
   });
 
   const publish = useMutation({
@@ -100,6 +110,19 @@ export function AdminCoursesPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
             </div>
+            <div>
+              <Label htmlFor="price">Price (RWF)</Label>
+              <Input
+                id="price"
+                type="number"
+                min={0}
+                step={1000}
+                value={form.price}
+                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                placeholder="0 = free"
+              />
+              <p className="mt-1 text-xs text-slate-400">0 = free. Paid courses start at 50,000 RWF.</p>
+            </div>
           </div>
           <div className="mt-4 flex justify-end">
             <Button onClick={() => create.mutate()} disabled={create.isPending || form.title.trim().length < 3}>
@@ -129,6 +152,21 @@ export function AdminCoursesPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={c.status === 'published' ? 'accent' : 'default'}>{c.status}</Badge>
+                {c.price && c.price > 0 ? (
+                  <>
+                    <Badge variant="accent">{formatMoney(c.price)}</Badge>
+                    <Button size="sm" variant="outline" onClick={() => setPrice.mutate({ id: c._id, price: 0 })} disabled={setPrice.isPending}>
+                      Make free
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Badge variant="success">Free</Badge>
+                    <Button size="sm" variant="outline" onClick={() => setPrice.mutate({ id: c._id, price: 50000 })} disabled={setPrice.isPending}>
+                      Make paid
+                    </Button>
+                  </>
+                )}
                 {c.status === 'published' ? (
                   <Button size="sm" variant="outline" onClick={() => unpublish.mutate(c._id)} disabled={unpublish.isPending}>
                     <Undo2 className="h-4 w-4" />

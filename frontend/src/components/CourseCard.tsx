@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { formatMoney } from '@/lib/utils';
 import type { Course } from '@/types';
 
 const LEVEL_TONE: Record<string, 'brand' | 'accent' | 'default' | 'warning'> = {
@@ -23,20 +24,27 @@ export function CourseCard({ course, href }: { course: Course; href?: string }) 
         <div className="p-5">
           <h3 className="line-clamp-2 font-semibold text-slate-900 group-hover:text-brand-700">{course.title}</h3>
           {course.summary && <p className="mt-2 line-clamp-2 text-sm text-slate-500">{course.summary}</p>}
-          <div className="mt-4 flex items-center gap-4 text-xs text-slate-400">
-            {typeof course.moduleCount === 'number' && (
-              <span className="inline-flex items-center gap-1">
-                <Layers className="h-3.5 w-3.5" />
-                {course.moduleCount} modules
-              </span>
+          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-slate-400">
+            <div className="flex items-center gap-4">
+              {typeof course.moduleCount === 'number' && (
+                <span className="inline-flex items-center gap-1">
+                  <Layers className="h-3.5 w-3.5" />
+                  {course.moduleCount} modules
+                </span>
+              )}
+              {course.estimatedHours != null && (
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {course.estimatedHours}h
+                </span>
+              )}
+              {course.status !== 'published' && <Badge variant="outline">Draft</Badge>}
+            </div>
+            {course.price && course.price > 0 ? (
+              <Badge variant="accent">{formatMoney(course.price)}</Badge>
+            ) : (
+              <Badge variant="success">Free</Badge>
             )}
-            {course.estimatedHours != null && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {course.estimatedHours}h
-              </span>
-            )}
-            {course.status !== 'published' && <Badge variant="outline">Draft</Badge>}
           </div>
         </div>
       </Card>
